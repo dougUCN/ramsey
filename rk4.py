@@ -209,7 +209,7 @@ def rk4vec ( t0, m, u0, dt, f ):
 #
 #    Output, real U(M), the fourth-order Runge-Kutta solution
 #    estimate at time T0+DT.
-#
+
   import numpy as np
 #
 #  Get four sample values of the derivative.
