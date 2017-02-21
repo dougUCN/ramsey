@@ -2,9 +2,9 @@
 #
 #   4th order runge kutta on linear on nEDM in
 #   a Magnetic Field with Uniform Static and Transverse
-#   Linearly Oscillating Components
+#   Circularly Oscillating Components
 #
-#   Douglas Wong 2/8/17
+#   Douglas Wong 2/20/17
 
 
 def main():
@@ -70,17 +70,18 @@ def main():
     return
 
 def spinor(t, n, u):
-# Right hand side of eq A.1 - A.4 in May nEDM thesis
-# u[0] = Re(a), u[1] = Im(a), u[2] = Re(b), u(3) = Im b
+# Modified form of RHS of eq 3.32 - 3.33 in May nEDM thesis,
+# following what he did in Appendix A to linearly polarized equations
+# u[0] = Re(c), u[1] = Im(c), u[2] = Re(c), u(3) = Im c
     import numpy as np
-    w = 20   #[rad s^-1]
-    w0 = 20  #[rad s^-1]
-    wl = 3.1415 #[rad s^-1]
+    w = 186   #[rad s^-1]
+    w0 = 188  #[rad s^-1]
+    wc = 1.57 #[rad s^-1]
     phi = 0   #[rad]
-    value = np.array ( [ 1/2*(w0*u[1] + wl*np.cos(w*t + phi)*u[3]), \
-                       1/2*(-w0*u[0] - wl*np.cos(w*t + phi)*u[2]), \
-                       1/2*(-w0*u[3] + wl*np.cos(w*t + phi)*u[1]), \
-                       1/2*(w0*u[2] + wl*np.cos(w*t + phi)*u[0])])
+    value = np.array ( [ 1/2*(-u[1]*(w - w0) + u[3]*wc), \
+                       1/2*(u[0]*(w - w0) - u[2]*wc), \
+                       1/2*(u[1]*wc + u[3]*(w - w0)), \
+                       1/2*(-u[0]*wc - u[2]*(w - w0))])
 
     return value
 
