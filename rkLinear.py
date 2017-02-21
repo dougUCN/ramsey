@@ -26,44 +26,39 @@ def main():
     u0[3] = 0
 
     time = [0]
-    aNorm = []
+    zProb = []
+    xProb = []
+    yProb = []
 
     i = 0
     while ( True ):
         # print ( '  %4d  %14.6g  %14.6g  %14.6g  %14.6g  %14.6g' \
         #         % ( i, time[i], u0[0], u0[1], u0[2], u0[3]))
 
-        # odds of measuring spin up along z
-        aNorm.append(np.power(u0[0], 2) + np.power(u0[1], 2))
-        # aNorm.append(u0[1])
-  #
-  #  Stop if we've exceeded TMAX.
-  #
+        # odds of measuring spin along z, x, and y
+        # u0[0] = Re[a], u0[1] = Im[a], u0[2] = Re[b], u0[3] = Im[b]
+        
+        zProb.append(np.power(u0[0], 2) + np.power(u0[1], 2))
+        xProb.append(1/2 + u0[0]*u0[2] + u0[1]*u0[3])
+        yProb.append(1/2 + u0[1]*u0[2] - u0[3]*u0[0])
+
         if ( tmax <= t0 ):
             break
 
         i = i + 1
-  #
-  #  Otherwise, advance to time T1, and have RK4 estimate
-  #  the solution U1 there.
-  #
+
+        # Takes one RK step
         t1 = t0 + dt
         u1 = rk4vec ( t0, n, u0, dt, spinor)     #takes one RK step
-  #
-  #  Shift the data to prepare for another step.
-  #
+
+        # Shift data
         t0 = t1
         u0 = u1.copy ( )
         time.append(t1)
-  #  End of While loop
+  #  END WHILE
 
-  #  Graphing stuff
-    plt.plot(time, aNorm)
-    plt.title('Odds of measuring spin up along z')
-    plt.xlabel('time [s]')
-    plt.ylabel('P(z)')
-    plt.axis([0,2*np.pi,-1,1.5])
-    plt.show()
+    plotStuff(xProb, yProb, zProb, time)
+
     print ( '' )
     print ( 'RKLINEAR:' )
     print ( '  Normal end of execution.' )
@@ -83,6 +78,44 @@ def spinor(t, n, u):
                        1/2*(w0*u[2] + wl*np.cos(w*t + phi)*u[0])])
 
     return value
+
+def plotStuff(xProb, yProb, zProb, time):
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from mpl_toolkits.mplot3d import Axes3D
+
+    plt.figure(1)
+    plt.plot(time, zProb)
+    plt.title('Odds of measuring spin up along z')
+    plt.xlabel('time [s]')
+    plt.ylabel('P(z)')
+    plt.axis([0,2*np.pi,0,1])
+
+    fig2 = plt.figure(2)
+    ax = fig2.add_subplot(111, projection='3d')
+    plt.title('Odds of measuring spin along x, y, z')
+    ax.scatter(xProb, yProb, zProb)
+    ax.set_xlabel('P(x)')
+    ax.set_ylabel('P(y)')
+    ax.set_zlabel('P(z)')
+
+    plt.figure(3)
+    plt.plot(time, xProb)
+    plt.title('Odds of measuring spin up along x')
+    plt.xlabel('time [s]')
+    plt.ylabel('P(x)')
+    plt.axis([0,2*np.pi,0,1])
+
+    plt.figure(4)
+    plt.plot(time, yProb)
+    plt.title('Odds of measuring spin up along y')
+    plt.xlabel('time [s]')
+    plt.ylabel('P(y)')
+    plt.axis([0,2*np.pi,0,1])
+
+    plt.show()
+
+    return
 
 if ( __name__ == '__main__' ):
     main()
