@@ -15,8 +15,8 @@ def main():
 
     # Initialize stuff
     n = 4     # number of equations in the vector
-    dt = 0.0001
-    tmax = 2*np.pi
+    dt = 0.001
+    tmax = 2
     t0 = 0
 
     u0 = np.zeros ( n )
@@ -37,7 +37,7 @@ def main():
 
         # odds of measuring spin along z, x, and y
         # u0[0] = Re[a], u0[1] = Im[a], u0[2] = Re[b], u0[3] = Im[b]
-        
+
         zProb.append(np.power(u0[0], 2) + np.power(u0[1], 2))
         xProb.append(1/2 + u0[0]*u0[2] + u0[1]*u0[3])
         yProb.append(1/2 + u0[1]*u0[2] - u0[3]*u0[0])
@@ -75,7 +75,7 @@ def spinor(t, n, u):
     value = np.array ( [ 1/2*(w0*u[1] + wl*np.cos(w*t + phi)*u[3]), \
                        1/2*(-w0*u[0] - wl*np.cos(w*t + phi)*u[2]), \
                        1/2*(-w0*u[3] + wl*np.cos(w*t + phi)*u[1]), \
-                       1/2*(w0*u[2] + wl*np.cos(w*t + phi)*u[0])])
+                       1/2*(w0*u[2] - wl*np.cos(w*t + phi)*u[0])])
 
     return value
 
