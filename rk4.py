@@ -44,7 +44,6 @@ def rk4 ( t0, u0, dt, f ):
 #
 #    Output, real U1, the fourth-order Runge-Kutta solution estimate
 #    at time T0+DT.
-#
 
 #
 #  Get four sample values of the derivative.

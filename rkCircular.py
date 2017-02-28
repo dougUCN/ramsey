@@ -9,11 +9,11 @@
 W_DRIVE = 20   #[rad s^-1]
 W0 = 20  #[rad s^-1]
 WC = 1.57 #[rad s^-1]
-PHI = 0  #[rad]
+PHI = 3.14159/2  #[rad]
 
 # Initial orientation of neutron
-A_INIT = 1
-B_INIT = 0
+A_INIT = 0.7071
+B_INIT = 0.7071
 
 def main():
     from rk4 import rk4vec
@@ -48,19 +48,19 @@ def main():
 
         # USE THIS ONLY FOR SPINORTEST
         # These come from explicity using eq 3.30-3.31 in the May thesis
-        temp = (W_DRIVE*t0 + PHI)
-
-        zProb.append(np.power(u0[0], 2) + np.power(u0[1], 2))
-
-        xProb.append(1/2 + (u0[0]*u0[2] + u0[1]*u0[3])*np.cos(temp)\
-                        + (u0[2]*u0[1] - u0[0]*u0[3])*np.sin(temp))
-        yProb.append(1/2 + (u0[2]*u0[1] - u0[0]*u0[3])*np.cos(temp)\
-                        - (u0[0]*u0[2] + u0[1]*u0[3])*np.sin(temp))
+        # temp = (W_DRIVE*t0 + PHI)
+        #
+        # zProb.append(np.power(u0[0], 2) + np.power(u0[1], 2))
+        #
+        # xProb.append(1/2 + (u0[0]*u0[2] + u0[1]*u0[3])*np.cos(temp)\
+        #                 + (u0[2]*u0[1] - u0[0]*u0[3])*np.sin(temp))
+        # yProb.append(1/2 + (u0[2]*u0[1] - u0[0]*u0[3])*np.cos(temp)\
+        #                 - (u0[0]*u0[2] + u0[1]*u0[3])*np.sin(temp))
 
         # USE THIS FOR SPINOR
-        # zProb.append(np.power(u0[0], 2) + np.power(u0[1], 2))
-        # xProb.append(1/2 + u0[0]*u0[2] + u0[1]*u0[3])
-        # yProb.append(1/2 + u0[1]*u0[2] - u0[3]*u0[0])
+        zProb.append(np.power(u0[0], 2) + np.power(u0[1], 2))
+        xProb.append(1/2 + u0[0]*u0[2] + u0[1]*u0[3])
+        yProb.append(1/2 + u0[1]*u0[2] - u0[3]*u0[0])
 
         if ( tmax <= t0 ):
             break
@@ -69,7 +69,7 @@ def main():
 
         # take one RK step
         t1 = t0 + dt
-        u1 = rk4vec ( t0, n, u0, dt, spinorTest)
+        u1 = rk4vec ( t0, n, u0, dt, spinor)
 
         # shift data
         t0 = t1
@@ -146,8 +146,8 @@ def spinor(t, n, u):
 # u[0] = Re(a), u[1] = Im(a), u[2] = Re(b), u(3) = Im(b)
     import numpy as np
     x = W_DRIVE*t + PHI
-    value = np.array ( [ 1/2*(W0*u[1] + WC*np.cos(x)*u[3]) + WC/2*u[2]*np.sin(x), \
-                       1/2*(-W0*u[0] - WC*np.cos(x)*u[2]) + WC/2*u[3]*np.sin(x), \
+    value = np.array ( [ 1/2*(W0*u[1] + WC*np.cos(x)*u[3]) - WC/2*u[2]*np.sin(x), \
+                       1/2*(-W0*u[0] - WC*np.cos(x)*u[2]) - WC/2*u[3]*np.sin(x), \
                        1/2*(-W0*u[3] + WC*np.cos(x)*u[1]) + WC/2*u[0]*np.sin(x), \
                        1/2*(W0*u[2] - WC*np.cos(x)*u[0]) + WC/2*u[1]*np.sin(x) ])
 
