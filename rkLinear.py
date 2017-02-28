@@ -6,6 +6,19 @@
 #
 #   Douglas Wong 2/8/17
 
+# Some initial parameters
+W_VAL = 20   #[rad s^-1]
+W0_VAL = 20  #[rad s^-1]
+WL_VAL = 3.1415 #[rad s^-1]
+PHI_VAL = 0  #[rad]
+
+# Initial "orientation" of neutron
+A_INIT = 1
+B_INIT = 0
+
+# Step taken by integrator and total period
+MAX_TIME = 2        # [seconds]
+TIME_STEP = 0.001    # [seconds]
 
 def main():
     from rk4 import rk4vec
@@ -15,14 +28,14 @@ def main():
 
     # Initialize stuff
     n = 4     # number of equations in the vector
-    dt = 0.001
-    tmax = 2
+    dt = TIME_STEP
+    tmax = MAX_TIME
     t0 = 0
 
     u0 = np.zeros ( n )
-    u0[0] = 1
+    u0[0] = A_INIT
     u0[1] = 0
-    u0[2] = 0
+    u0[2] = B_INIT
     u0[3] = 0
 
     time = [0]
@@ -32,9 +45,6 @@ def main():
 
     i = 0
     while ( True ):
-        # print ( '  %4d  %14.6g  %14.6g  %14.6g  %14.6g  %14.6g' \
-        #         % ( i, time[i], u0[0], u0[1], u0[2], u0[3]))
-
         # odds of measuring spin along z, x, and y
         # u0[0] = Re[a], u0[1] = Im[a], u0[2] = Re[b], u0[3] = Im[b]
 
@@ -55,7 +65,7 @@ def main():
         t0 = t1
         u0 = u1.copy ( )
         time.append(t1)
-  #  END WHILE
+    #  END WHILE
 
     plotStuff(xProb, yProb, zProb, time)
 
@@ -68,10 +78,10 @@ def spinor(t, n, u):
 # Right hand side of eq A.1 - A.4 in May nEDM thesis
 # u[0] = Re(a), u[1] = Im(a), u[2] = Re(b), u(3) = Im b
     import numpy as np
-    w = 20   #[rad s^-1]
-    w0 = 20  #[rad s^-1]
-    wl = 3.1415 #[rad s^-1]
-    phi = 0   #[rad]
+    w = W_VAL   #[rad s^-1]
+    w0 = W0_VAL  #[rad s^-1]
+    wl = WL_VAL #[rad s^-1]
+    phi = PHI_VAL   #[rad]
     value = np.array ( [ 1/2*(w0*u[1] + wl*np.cos(w*t + phi)*u[3]), \
                        1/2*(-w0*u[0] - wl*np.cos(w*t + phi)*u[2]), \
                        1/2*(-w0*u[3] + wl*np.cos(w*t + phi)*u[1]), \
@@ -98,6 +108,7 @@ def plotStuff(xProb, yProb, zProb, time):
     ax.set_xlabel('P(x)')
     ax.set_ylabel('P(y)')
     ax.set_zlabel('P(z)')
+    ax.view_init(30,220) # So that the viewing angle looks ok
 
     plt.figure(3)
     plt.plot(time, xProb)

@@ -6,14 +6,20 @@
 #
 #   Douglas Wong 2/20/17
 
-W_DRIVE = 20   #[rad s^-1]
-W0 = 20  #[rad s^-1]
-WC = 1.57 #[rad s^-1]
-PHI = 3.14159/2  #[rad]
+# Some initial parameters
+W_VAL = 20   #[rad s^-1]
+W0_VAL = 20  #[rad s^-1]
+WC_VAL = 1.57 #[rad s^-1]
+PHI_VAL = 0  #[rad]
 
-# Initial orientation of neutron
+# Initial "orientation" of neutron
 A_INIT = 0.7071
 B_INIT = 0.7071
+
+# Step taken by integrator and total period
+MAX_TIME = 1        # [seconds]
+TIME_STEP = 0.001    # [seconds]
+
 
 def main():
     from rk4 import rk4vec
@@ -22,8 +28,8 @@ def main():
 
     # Initialize stuff
     n = 4     # number of equations in the vector
-    dt = 0.001
-    tmax = 1
+    dt = TIME_STEP
+    tmax = MAX_TIME
     t0 = 0
 
     u0 = np.zeros(n)
@@ -39,16 +45,18 @@ def main():
 
     i = 0
     while (True):
-        # print ( '  %4d  %14.6g  %14.6g  %14.6g  %14.6g  %14.6g' \
-        #         % ( i, time[i], u0[0], u0[1], u0[2], u0[3]))
-
         # odds of measuring spin along z, x, and y
         # derived from eqs 3.22 - 3.24 in May's nEDM thesis
         # u0[0] = Re[c], u0[1] = Im[c], u0[2] = Re[d], u0[3] = Im[d]
 
-        # USE THIS ONLY FOR SPINORTEST
-        # These come from explicity using eq 3.30-3.31 in the May thesis
-        # temp = (W_DRIVE*t0 + PHI)
+        # USE THIS FOR SPINOR
+        zProb.append(np.power(u0[0], 2) + np.power(u0[1], 2))
+        xProb.append(1/2 + u0[0]*u0[2] + u0[1]*u0[3])
+        yProb.append(1/2 + u0[1]*u0[2] - u0[3]*u0[0])
+
+        # # USE THIS ONLY FOR SPINORTEST
+        # # These come from explicity writing out eq 3.30-3.31 in the May thesis
+        # temp = (W_VAL*t0 + PHI_VAL)
         #
         # zProb.append(np.power(u0[0], 2) + np.power(u0[1], 2))
         #
@@ -56,11 +64,6 @@ def main():
         #                 + (u0[2]*u0[1] - u0[0]*u0[3])*np.sin(temp))
         # yProb.append(1/2 + (u0[2]*u0[1] - u0[0]*u0[3])*np.cos(temp)\
         #                 - (u0[0]*u0[2] + u0[1]*u0[3])*np.sin(temp))
-
-        # USE THIS FOR SPINOR
-        zProb.append(np.power(u0[0], 2) + np.power(u0[1], 2))
-        xProb.append(1/2 + u0[0]*u0[2] + u0[1]*u0[3])
-        yProb.append(1/2 + u0[1]*u0[2] - u0[3]*u0[0])
 
         if ( tmax <= t0 ):
             break
@@ -126,30 +129,29 @@ def plotStuff(xProb, yProb, zProb, time):
 
     return
 
-def spinorTest(t, n, u):
-# Modified form of RHS of eq 3.32 - 3.33 in May's nEDM thesis,
-# following what he did in Appendix A to linearly polarized equations
-# u[0] = Re(c), u[1] = Im(c), u[2] = Re(c), u(3) = Im c
-    import numpy as np
-    value = np.array ( [ 1/2*(-u[1]*(W_DRIVE - W0) + u[3]*WC), \
-                       1/2*(u[0]*(W_DRIVE - W0) - u[2]*WC), \
-                       1/2*(u[1]*WC + u[3]*(W_DRIVE - W0)), \
-                       1/2*(-u[0]*WC - u[2]*(W_DRIVE - W0))])
-
-    return value
-
-
-
 def spinor(t, n, u):
-# Modified fight hand side of eq A.1 - A.4 in May's nEDM thesis
+# Modified right hand side of eq A.1 - A.4 in May's nEDM thesis
 # using eq 3.28, 3.29 as a basis
 # u[0] = Re(a), u[1] = Im(a), u[2] = Re(b), u(3) = Im(b)
     import numpy as np
-    x = W_DRIVE*t + PHI
-    value = np.array ( [ 1/2*(W0*u[1] + WC*np.cos(x)*u[3]) - WC/2*u[2]*np.sin(x), \
-                       1/2*(-W0*u[0] - WC*np.cos(x)*u[2]) - WC/2*u[3]*np.sin(x), \
-                       1/2*(-W0*u[3] + WC*np.cos(x)*u[1]) + WC/2*u[0]*np.sin(x), \
-                       1/2*(W0*u[2] - WC*np.cos(x)*u[0]) + WC/2*u[1]*np.sin(x) ])
+    x = W_VAL*t + PHI_VAL
+    value = np.array ( [ 1/2*(W0_VAL*u[1] + WC_VAL*np.cos(x)*u[3]) - WC_VAL/2*u[2]*np.sin(x), \
+                       1/2*(-W0_VAL*u[0] - WC_VAL*np.cos(x)*u[2]) - WC_VAL/2*u[3]*np.sin(x), \
+                       1/2*(-W0_VAL*u[3] + WC_VAL*np.cos(x)*u[1]) + WC_VAL/2*u[0]*np.sin(x), \
+                       1/2*(W0_VAL*u[2] - WC_VAL*np.cos(x)*u[0]) + WC_VAL/2*u[1]*np.sin(x) ])
+
+    return value
+
+def spinorTest(t, n, u):
+# Modified form of RHS of eq 3.32 - 3.33 in May's nEDM thesis,
+# following what he did in Appendix A to linearly polarized equations
+# Note: Phi doesn't factor into this integral
+# u[0] = Re(c), u[1] = Im(c), u[2] = Re(c), u(3) = Im c
+    import numpy as np
+    value = np.array ( [ 1/2*(-u[1]*(W_VAL - W0_VAL) + u[3]*WC_VAL), \
+                       1/2*(u[0]*(W_VAL - W0_VAL) - u[2]*WC_VAL), \
+                       1/2*(u[1]*WC_VAL + u[3]*(W_VAL - W0_VAL)), \
+                       1/2*(-u[0]*WC_VAL - u[2]*(W_VAL - W0_VAL))])
 
     return value
 
