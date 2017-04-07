@@ -48,7 +48,7 @@ def main():
         # odds of measuring spin along z, x, and y
         # u0[0] = Re[a], u0[1] = Im[a], u0[2] = Re[b], u0[3] = Im[b]
 
-        zProb.append(np.power(u0[0], 2) + np.power(u0[1], 2))
+        zProb.append(u0[0]*u0[0] + u0[1]*u0[1])
         xProb.append(1/2 + u0[0]*u0[2] + u0[1]*u0[3])
         yProb.append(1/2 + u0[1]*u0[2] - u0[3]*u0[0])
 

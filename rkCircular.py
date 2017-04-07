@@ -10,11 +10,11 @@
 W_VAL = 20   #[rad s^-1]
 W0_VAL = 20  #[rad s^-1]
 WC_VAL = 1.57 #[rad s^-1]
-PHI_VAL = 0  #[rad]
+PHI_VAL = 3.14159/2 #[rad]
 
 # Initial "orientation" of neutron
-A_INIT = 0.7071
-B_INIT = 0.7071
+A_INIT = .7071
+B_INIT = .7071
 
 # Step taken by integrator and total period
 MAX_TIME = 1        # [seconds]
@@ -43,6 +43,12 @@ def main():
     xProb = []
     yProb = []
 
+    # x - y components of circularly rotating magnetic B field
+    xB = []
+    yB = []
+    angleDiff = [] #Between semiclassical neutron orientation in x-y and the field
+
+
     i = 0
     while (True):
         # odds of measuring spin along z, x, and y
@@ -50,9 +56,19 @@ def main():
         # u0[0] = Re[c], u0[1] = Im[c], u0[2] = Re[d], u0[3] = Im[d]
 
         # USE THIS FOR SPINOR
-        zProb.append(np.power(u0[0], 2) + np.power(u0[1], 2))
+        zProb.append(u0[0]*u0[0] + u0[1]*u0[1])
         xProb.append(1/2 + u0[0]*u0[2] + u0[1]*u0[3])
         yProb.append(1/2 + u0[1]*u0[2] - u0[3]*u0[0])
+
+        xB.append(np.cos(W_VAL*(-1*t0) + PHI_VAL))
+        yB.append(np.sin(W_VAL*(-1*t0) + PHI_VAL))
+
+        xTemp = xProb[i] - 0.5
+        yTemp = yProb[i] - 0.5
+
+        angleDiff.append(180/np.pi * np.arccos((xTemp*xB[i] + yTemp*yB[i]) \
+                            / (np.sqrt(xTemp*xTemp + yTemp*yTemp)) \
+                            / (np.sqrt(xB[i]*xB[i] + yB[i]*yB[i])) ) )
 
         # # USE THIS ONLY FOR SPINORTEST
         # # These come from explicity writing out eq 3.30-3.31 in the May thesis
@@ -80,14 +96,16 @@ def main():
         time.append(t1)
   #  END WHILE
 
-    plotStuff(xProb, yProb, zProb, time)
+    # print ( xProb[-1] )
+    # print ( yProb[-1] )
+    plotStuff(xProb, yProb, zProb, time, xB, yB, angleDiff)
 
     print ( '' )
     print ( 'RKLINEAR:' )
     print ( '  Normal end of execution.' )
     return
 
-def plotStuff(xProb, yProb, zProb, time):
+def plotStuff(xProb, yProb, zProb, time, xB, yB, angleDiff):
     import numpy as np
     import matplotlib.pyplot as plt
     from mpl_toolkits.mplot3d import Axes3D
@@ -124,6 +142,25 @@ def plotStuff(xProb, yProb, zProb, time):
     plt.xlabel('time [s]')
     plt.ylabel('P(y)')
     plt.axis([0,2*np.pi,0,1])
+
+    plt.figure(5)
+    plt.plot(time, xB)
+    plt.title('X component of circularly rotating magnetic field')
+    plt.ylabel('B_x')
+    plt.xlabel('time [s]')
+
+    plt.figure(6)
+    plt.plot(time, yB)
+    plt.title('Y component of circularly rotating magnetic field')
+    plt.ylabel('B_y')
+    plt.xlabel('time [s]')
+
+    plt.figure(7)
+    plt.plot(time, angleDiff)
+    plt.title('Angle difference between RF and neutron moment')
+    plt.ylabel('Degrees')
+    plt.xlabel('time [s]')
+    plt.ylim(0,180)
 
     plt.show()
 
