@@ -7,14 +7,14 @@
 #   Douglas Wong 2/20/17
 
 # Some initial parameters
-W_VAL = 20   #[rad s^-1]
-W0_VAL = 20  #[rad s^-1]
-WC_VAL = 1.57 #[rad s^-1]
-PHI_VAL = 3.14159/2 #[rad]
+W_VAL = 20   #[rad s^-1]    
+W0_VAL = 20  #[rad s^-1]    Static field strength
+WC_VAL = 1.57 #[rad s^-1]   Rotating field strength
+PHI_VAL = 0 #[rad]          RF pulse inital phase
 
 # Initial "orientation" of neutron
-A_INIT = .7071
-B_INIT = .7071
+A_INIT = 1
+B_INIT = 0
 
 # Step taken by integrator and total period
 MAX_TIME = 1        # [seconds]
@@ -66,6 +66,8 @@ def main():
         xTemp = xProb[i] - 0.5
         yTemp = yProb[i] - 0.5
 
+        # Dot product to find angle between RF field and semiclassical
+        # neutron orientation
         angleDiff.append(180/np.pi * np.arccos((xTemp*xB[i] + yTemp*yB[i]) \
                             / (np.sqrt(xTemp*xTemp + yTemp*yTemp)) \
                             / (np.sqrt(xB[i]*xB[i] + yB[i]*yB[i])) ) )
@@ -96,8 +98,7 @@ def main():
         time.append(t1)
   #  END WHILE
 
-    # print ( xProb[-1] )
-    # print ( yProb[-1] )
+    print ( zProb[-1] )
     plotStuff(xProb, yProb, zProb, time, xB, yB, angleDiff)
 
     print ( '' )
