@@ -1,25 +1,25 @@
 #!/usr/bin/env python
 #
 # Draws ramsey fringes for a neutron in an nEDM experiment,
-# where the pi/2 pulse is a circularly
-# rotating magnetic field in the x-y plane
+# where the pi/2 pulse is a linearly
+# oscillating magnetic field in the x-y plane
 #
 # Douglas Wong 4/7/17
 
 # Time parameters
-PULSE_1_TIME = 2        # [seconds]
-PULSE_2_TIME = 2        # [seconds]
-TIME_STEP = 0.001       # [seconds]
-PRECESS_TIME = 7.5      # [seconds]
+PULSE_1_TIME = 3        # [seconds]
+PULSE_2_TIME = 3        # [seconds]
+TIME_STEP = 0.001       # [seconds]r
+PRECESS_TIME = 10      # [seconds]
 
 # Some initial parameters
 W_STEP = 0.01    #[rad s^-1]    Step value of w to make ramsey fringes
+W_VAL = 186   #[rad s^-1]    What w to start with
 W_MAX  = 190        #[rad s^-1]    What w to end with
 
-W_VAL = 186   #[rad s^-1]    What w to start with
 W0_VAL = 188  #[rad s^-1]    Static field strength
 WL_VAL = 0.5   #[rad s^-1]   Oscillating field strength
-PHI_VAL = 0  #[rad]          RF pulse inital phase
+PHI_VAL_1 = 0  #[rad]          RF pulse inital phase for first pulse
 
 def main():
     import numpy as np
@@ -34,9 +34,11 @@ def main():
 
     for wTemp in wRange:
         ket[0] = 1       #neutron starts spin up (ket[0] = Re[a0])
-        ket = spinPulse(ket, TIME_STEP, PULSE_1_TIME, n, wTemp, W0_VAL, WL_VAL, PHI_VAL)
+        ket = spinPulse(ket, TIME_STEP, PULSE_1_TIME, n, wTemp, W0_VAL, WL_VAL, PHI_VAL_1)
         ket = larmor(ket, PRECESS_TIME, W0_VAL, n)
-        ket = spinPulse(ket, TIME_STEP, PULSE_2_TIME, n,wTemp, W0_VAL, WL_VAL, PHI_VAL)
+
+        #spinPulse 2 has to stay in phase with spinPulse 1 while the larmor precession occurs
+        ket = spinPulse(ket, TIME_STEP, PULSE_2_TIME, n,wTemp, W0_VAL, WL_VAL, wTemp*PRECESS_TIME + PHI_VAL_1)
         zProb.append(ket[0]*ket[0] + ket[1]*ket[1])
         ket[:] = 0    # Reset ket for next loop
 
