@@ -13,7 +13,7 @@ TIME_STEP = 0.001       # [seconds]
 PRECESS_TIME = 10      # [seconds]
 
 # Some initial parameters
-W_STEP = 0.1    #[rad s^-1]    Step value of w to make ramsey fringes
+W_STEP = 0.01    #[rad s^-1]    Step value of w to make ramsey fringes
 W_VAL = 186   #[rad s^-1]    What w to start with
 W_MAX  = 190        #[rad s^-1]    What w to end with
 
@@ -38,7 +38,8 @@ def main():
         ket = larmor(ket, PRECESS_TIME, W0_VAL, n)
 
         #spinPulse 2 has to stay in phase with spinPulse 1 while the larmor precession occurs
-        ket = spinPulse(ket, TIME_STEP, PULSE_2_TIME, n,wTemp, W0_VAL, WC_VAL, wTemp*PRECESS_TIME + PHI_VAL_1)
+        phiVal2 = -wTemp*PRECESS_TIME + PHI_VAL_1 + np.pi/2
+        ket = spinPulse(ket, TIME_STEP, PULSE_2_TIME, n,wTemp, W0_VAL, WC_VAL, phiVal2)
         zProb.append(ket[0]*ket[0] + ket[1]*ket[1])
         ket[:] = 0    # Reset ket for next loop
 
