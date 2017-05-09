@@ -29,22 +29,17 @@ def main():
     # Initialize stuff
     n = 4     # number of equations in the vector
     dt = TIME_STEP
-    tmax = MAX_TIME
-    t0 = 0
+    tRange = np.arange(0, MAX_TIME + dt, dt)
 
     u0 = np.zeros ( n )
     u0[0] = A_INIT
-    u0[1] = 0
     u0[2] = B_INIT
-    u0[3] = 0
 
-    time = [0]
     zProb = []
     xProb = []
     yProb = []
 
-    i = 0
-    while ( True ):
+    for t0 in tRange:
         # odds of measuring spin along z, x, and y
         # u0[0] = Re[a], u0[1] = Im[a], u0[2] = Re[b], u0[3] = Im[b]
 
@@ -52,26 +47,12 @@ def main():
         xProb.append(1/2 + u0[0]*u0[2] + u0[1]*u0[3])
         yProb.append(1/2 + u0[1]*u0[2] - u0[3]*u0[0])
 
-        if ( tmax <= t0 ):
-            break
-
-        i = i + 1
-
         # Takes one RK step
-        t1 = t0 + dt
-        u1 = rk4vec ( t0, n, u0, dt, spinor)     #takes one RK step
+        u0 = rk4vec ( t0, n, u0, dt, spinor)
+    #  END FOR
 
-        # Shift data
-        t0 = t1
-        u0 = u1.copy ( )
-        time.append(t1)
-    #  END WHILE
-
-    plotStuff(xProb, yProb, zProb, time)
-
-    print ( '' )
-    print ( 'RKLINEAR:' )
-    print ( '  Normal end of execution.' )
+    plotStuff(xProb, yProb, zProb, tRange)
+    
     return
 
 def spinor(t, n, u):

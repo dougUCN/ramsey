@@ -38,7 +38,7 @@ def main():
         ket = larmor(ket, PRECESS_TIME, W0_VAL, n)
 
         #spinPulse 2 has to stay in phase with spinPulse 1 while the larmor precession occurs
-        phiVal2 = -wTemp*PRECESS_TIME + PHI_VAL_1 + np.pi/2
+        phiVal2 = -wTemp*PULSE_1_TIME +PHI_VAL_1 - wTemp*PRECESS_TIME
         ket = spinPulse(ket, TIME_STEP, PULSE_2_TIME, n,wTemp, W0_VAL, WL_VAL, phiVal2)
         zProb.append(ket[0]*ket[0] + ket[1]*ket[1])
         ket[:] = 0    # Reset ket for next loop

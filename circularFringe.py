@@ -10,12 +10,12 @@
 PULSE_1_TIME = 3        # [seconds]
 PULSE_2_TIME = 3        # [seconds]
 TIME_STEP = 0.001       # [seconds]
-PRECESS_TIME = 10      # [seconds]
+PRECESS_TIME = 0      # [seconds]
 
 # Some initial parameters
 W_STEP = 0.01    #[rad s^-1]    Step value of w to make ramsey fringes
-W_VAL = 186   #[rad s^-1]    What w to start with
-W_MAX  = 190        #[rad s^-1]    What w to end with
+W_VAL = 188   #[rad s^-1]    What w to start with
+W_MAX  = 188       #[rad s^-1]    What w to end with
 
 W0_VAL = 188  #[rad s^-1]    Static field strength
 WC_VAL = 0.5   #[rad s^-1]   Rotating field strength
@@ -27,7 +27,7 @@ def main():
     t0 = 0
     n = 4
 
-    wRange = np.arange(W_VAL, W_MAX, W_STEP)
+    wRange = np.arange(W_VAL, W_MAX + W_STEP, W_STEP)
     zProb = []
 
     ket = np.zeros ( n )
@@ -36,17 +36,19 @@ def main():
         ket[0] = 1       # neutron starts spin up (ket[0] = Re[a0])
         ket = spinPulse(ket, TIME_STEP, PULSE_1_TIME, n, wTemp, W0_VAL, WC_VAL, PHI_VAL_1)
         ket = larmor(ket, PRECESS_TIME, W0_VAL, n)
+        print("After pulse 1:", wTemp,"\t", ket)
 
         #spinPulse 2 has to stay in phase with spinPulse 1 while the larmor precession occurs
-        phiVal2 = -wTemp*PRECESS_TIME + PHI_VAL_1 + np.pi/2
-        ket = spinPulse(ket, TIME_STEP, PULSE_2_TIME, n,wTemp, W0_VAL, WC_VAL, phiVal2)
+        phiVal2 = -wTemp*(PULSE_1_TIME) + PHI_VAL_1 - wTemp*PRECESS_TIME
+        ket = spinPulse(ket, TIME_STEP, PULSE_2_TIME, n, wTemp, W0_VAL, WC_VAL, phiVal2)
+        print("After pulse 2:", wTemp,"\t", ket)
         zProb.append(ket[0]*ket[0] + ket[1]*ket[1])
         ket[:] = 0    # Reset ket for next loop
 
-    plt.plot(wRange,zProb)
-    plt.xlabel('w [rad s^-1]')
-    plt.ylabel('P(z)')
-    plt.show()
+    # plt.plot(wRange,zProb)
+    # plt.xlabel('w [rad s^-1]')
+    # plt.ylabel('P(z)')
+    # plt.show()
 
     return
 
@@ -54,22 +56,12 @@ def spinPulse(u0, dt, tmax, n, w, w0, wc, phi):
 # Runge Kutta integration for SPINOR with step size dt
 # Requires a [n] element vector u0 with inital parameters
 # Returns the updated array u0 specifying where the neutron has ended up
+    import numpy as np
     i = 0
-    t0 = 0
-    while (True):
-        if ( tmax <= t0 ):
-            break
+    tRange = np.arange(0, tmax, dt)
+    for tTemp in tRange:
+        u0 = rkStep ( tTemp, n, u0, dt, w, w0, wc, phi, spinor)
 
-        i = i + 1
-
-        # take one RK step
-        t1 = t0 + dt
-        u1 = rkStep ( t0, n, u0, dt, w, w0, wc, phi, spinor)
-
-        # shift data
-        t0 = t1
-        u0 = u1.copy ( )
-    #  END WHILE
     return u0
 
 def larmor(u0, dt, w0, n):
@@ -92,7 +84,7 @@ def larmor(u0, dt, w0, n):
 def spinor(t, n, u, w, w0, wc, phi):
 # Modified right hand side of eq A.1 - A.4 in May's nEDM thesis
 # using eq 3.28, 3.29 as a basis
-# u[0] = Re(a), u[1] = Im(a), u[2] = Re(b), u(3) = Im(b)
+# u[0] = Re(a'), u[1] = Im(a'), u[2] = Re(b'), u(3) = Im(b')
     import numpy as np
     if ( n != 4 ):
         return np.zeros(n)

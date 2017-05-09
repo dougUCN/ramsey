@@ -7,17 +7,20 @@
 #   Douglas Wong 2/20/17
 
 # Some initial parameters
-W_VAL = 20   #[rad s^-1]    
-W0_VAL = 20  #[rad s^-1]    Static field strength
-WC_VAL = 1.57 #[rad s^-1]   Rotating field strength
-PHI_VAL = 0 #[rad]          RF pulse inital phase
+W_VAL = 188   #[rad s^-1]
+W0_VAL = 188  #[rad s^-1]    Static field strength
+WC_VAL = 0.5 #[rad s^-1]   Rotating field strength
+PHI_VAL = -3*188 #[rad]          RF pulse inital phase
 
 # Initial "orientation" of neutron
-A_INIT = 1
-B_INIT = 0
+# Complex and real parts of the ket
+A_REAL_INIT = 0.53855993
+A_COMP_INIT = 0.49528664
+B_REAL_INIT = -0.46129104
+B_COMP_INIT = -0.50182288
 
 # Step taken by integrator and total period
-MAX_TIME = 1        # [seconds]
+MAX_TIME = 3        # [seconds]
 TIME_STEP = 0.001    # [seconds]
 
 
@@ -29,16 +32,13 @@ def main():
     # Initialize stuff
     n = 4     # number of equations in the vector
     dt = TIME_STEP
-    tmax = MAX_TIME
-    t0 = 0
-
+    tRange = np.arange(0, MAX_TIME + dt, dt)
     u0 = np.zeros(n)
-    u0[0] = A_INIT
-    u0[1] = 0
-    u0[2] = B_INIT
-    u0[3] = 0
+    u0[0] = A_REAL_INIT
+    u0[1] = A_COMP_INIT
+    u0[2] = B_REAL_INIT
+    u0[3] = B_COMP_INIT
 
-    time = [0]
     zProb = []
     xProb = []
     yProb = []
@@ -49,13 +49,11 @@ def main():
     angleDiff = [] #Between semiclassical neutron orientation in x-y and the field
 
 
-    i = 0
-    while (True):
+    for t0 in tRange:
         # odds of measuring spin along z, x, and y
         # derived from eqs 3.22 - 3.24 in May's nEDM thesis
         # u0[0] = Re[c], u0[1] = Im[c], u0[2] = Re[d], u0[3] = Im[d]
 
-        # USE THIS FOR SPINOR
         zProb.append(u0[0]*u0[0] + u0[1]*u0[1])
         xProb.append(1/2 + u0[0]*u0[2] + u0[1]*u0[3])
         yProb.append(1/2 + u0[1]*u0[2] - u0[3]*u0[0])
@@ -63,47 +61,21 @@ def main():
         xB.append(np.cos(W_VAL*(-1*t0) + PHI_VAL))
         yB.append(np.sin(W_VAL*(-1*t0) + PHI_VAL))
 
-        xTemp = xProb[i] - 0.5
-        yTemp = yProb[i] - 0.5
+        xTemp = xProb[-1] - 0.5
+        yTemp = yProb[-1] - 0.5
 
         # Dot product to find angle between RF field and semiclassical
         # neutron orientation
-        angleDiff.append(180/np.pi * np.arccos((xTemp*xB[i] + yTemp*yB[i]) \
+        angleDiff.append(180/np.pi * np.arccos((xTemp*xB[-1] + yTemp*yB[-1]) \
                             / (np.sqrt(xTemp*xTemp + yTemp*yTemp)) \
-                            / (np.sqrt(xB[i]*xB[i] + yB[i]*yB[i])) ) )
-
-        # # USE THIS ONLY FOR SPINORTEST
-        # # These come from explicity writing out eq 3.30-3.31 in the May thesis
-        # temp = (W_VAL*t0 + PHI_VAL)
-        #
-        # zProb.append(np.power(u0[0], 2) + np.power(u0[1], 2))
-        #
-        # xProb.append(1/2 + (u0[0]*u0[2] + u0[1]*u0[3])*np.cos(temp)\
-        #                 + (u0[2]*u0[1] - u0[0]*u0[3])*np.sin(temp))
-        # yProb.append(1/2 + (u0[2]*u0[1] - u0[0]*u0[3])*np.cos(temp)\
-        #                 - (u0[0]*u0[2] + u0[1]*u0[3])*np.sin(temp))
-
-        if ( tmax <= t0 ):
-            break
-
-        i = i + 1
+                            / (np.sqrt(xB[-1]*xB[-1] + yB[-1]*yB[-1])) ) )
 
         # take one RK step
-        t1 = t0 + dt
-        u1 = rk4vec ( t0, n, u0, dt, spinor)
+        u0 = rk4vec ( t0, n, u0, dt, spinor)
+    # END FOR
 
-        # shift data
-        t0 = t1
-        u0 = u1.copy ( )
-        time.append(t1)
-  #  END WHILE
+    plotStuff(xProb, yProb, zProb, tRange, xB, yB, angleDiff)
 
-    print ( zProb[-1] )
-    plotStuff(xProb, yProb, zProb, time, xB, yB, angleDiff)
-
-    print ( '' )
-    print ( 'RKLINEAR:' )
-    print ( '  Normal end of execution.' )
     return
 
 def plotStuff(xProb, yProb, zProb, time, xB, yB, angleDiff):
@@ -147,13 +119,13 @@ def plotStuff(xProb, yProb, zProb, time, xB, yB, angleDiff):
     plt.figure(5)
     plt.plot(time, xB)
     plt.title('X component of circularly rotating magnetic field')
-    plt.ylabel('B_x')
+    plt.ylabel('B_x [Wrong units]')
     plt.xlabel('time [s]')
 
     plt.figure(6)
     plt.plot(time, yB)
     plt.title('Y component of circularly rotating magnetic field')
-    plt.ylabel('B_y')
+    plt.ylabel('B_y [Wrong units]')
     plt.xlabel('time [s]')
 
     plt.figure(7)
@@ -177,19 +149,6 @@ def spinor(t, n, u):
                        1/2*(-W0_VAL*u[0] - WC_VAL*np.cos(x)*u[2]) - WC_VAL/2*u[3]*np.sin(x), \
                        1/2*(-W0_VAL*u[3] + WC_VAL*np.cos(x)*u[1]) + WC_VAL/2*u[0]*np.sin(x), \
                        1/2*(W0_VAL*u[2] - WC_VAL*np.cos(x)*u[0]) + WC_VAL/2*u[1]*np.sin(x) ])
-
-    return value
-
-def spinorTest(t, n, u):
-# Modified form of RHS of eq 3.32 - 3.33 in May's nEDM thesis,
-# following what he did in Appendix A to linearly polarized equations
-# Note: Phi doesn't factor into this integral
-# u[0] = Re(c), u[1] = Im(c), u[2] = Re(c), u(3) = Im c
-    import numpy as np
-    value = np.array ( [ 1/2*(-u[1]*(W_VAL - W0_VAL) + u[3]*WC_VAL), \
-                       1/2*(u[0]*(W_VAL - W0_VAL) - u[2]*WC_VAL), \
-                       1/2*(u[1]*WC_VAL + u[3]*(W_VAL - W0_VAL)), \
-                       1/2*(-u[0]*WC_VAL - u[2]*(W_VAL - W0_VAL))])
 
     return value
 
