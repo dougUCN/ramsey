@@ -38,7 +38,7 @@ def main():
         ket = larmor(ket, PRECESS_TIME, W0_VAL, n)
 
         #spinPulse 2 has to stay in phase with spinPulse 1 while the larmor precession occurs
-        phiVal2 = -wTemp*PULSE_1_TIME +PHI_VAL_1 - wTemp*PRECESS_TIME
+        phiVal2 = wTemp*PULSE_1_TIME +PHI_VAL_1 + wTemp*PRECESS_TIME
         ket = spinPulse(ket, TIME_STEP, PULSE_2_TIME, n,wTemp, W0_VAL, WL_VAL, phiVal2)
         zProb.append(ket[0]*ket[0] + ket[1]*ket[1])
         ket[:] = 0    # Reset ket for next loop
@@ -54,22 +54,10 @@ def spinPulse(u0, dt, tmax, n, w, w0, wc, phi):
 # Runge Kutta integration for SPINOR with step size dt
 # Requires a [n] element vector u0 with inital parameters
 # Returns the updated array u0 specifying where the neutron has ended up
-    i = 0
-    t0 = 0
-    while (True):
-        if ( tmax <= t0 ):
-            break
-
-        i = i + 1
-
-        # take one RK step
-        t1 = t0 + dt
-        u1 = rkStep ( t0, n, u0, dt, w, w0, wc, phi, spinor)
-
-        # shift data
-        t0 = t1
-        u0 = u1.copy ( )
-    #  END WHILE
+    import numpy as np
+    tRange = np.arange(0, tmax, dt)
+    for tTemp in tRange:
+        u0 = rkStep ( tTemp, n, u0, dt, w, w0, wc, phi, spinor)
     return u0
 
 def larmor(u0, dt, w0, n):

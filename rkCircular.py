@@ -7,20 +7,20 @@
 #   Douglas Wong 2/20/17
 
 # Some initial parameters
-W_VAL = 188   #[rad s^-1]
-W0_VAL = 188  #[rad s^-1]    Static field strength
-WC_VAL = 0.5 #[rad s^-1]   Rotating field strength
-PHI_VAL = -3*188 #[rad]          RF pulse inital phase
+W_VAL = 20   #[rad s^-1]
+W0_VAL = 20  #[rad s^-1]    Static field strength
+WC_VAL = 1.57 #[rad s^-1]   Rotating field strength
+PHI_VAL = 0 #[rad]          RF pulse inital phase
 
 # Initial "orientation" of neutron
 # Complex and real parts of the ket
-A_REAL_INIT = 0.53855993
-A_COMP_INIT = 0.49528664
-B_REAL_INIT = -0.46129104
-B_COMP_INIT = -0.50182288
+A_REAL_INIT = 1
+A_COMP_INIT = 0
+B_REAL_INIT = 0
+B_COMP_INIT = 0
 
 # Step taken by integrator and total period
-MAX_TIME = 3        # [seconds]
+MAX_TIME = 2        # [seconds]
 TIME_STEP = 0.001    # [seconds]
 
 
