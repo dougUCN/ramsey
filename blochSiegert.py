@@ -1,25 +1,27 @@
 #!/usr/bin/env python
 #
-# Draws ramsey fringes for a neutron in an nEDM experiment,
-# where the pi/2 pulse is a circularly
-# rotating magnetic field in the x-y plane
+# Draws a graph of Bloch Siegert shift in optimized linear ramsey fringes
+# as a function of pulse time t.
 #
-# Douglas Wong 4/7/17
+# To determine the BS shift for a linear fringe, searches for the lowest
+# local minimun in the vicinity of w_0, the expected resonant frequency,
+# and computes
+#
+# Douglas Wong 5/28/17
 
 # Time parameters
-PULSE_1_TIME = 3        # [seconds]
-PULSE_2_TIME = 3        # [seconds]
-TIME_STEP = 0.001       # [seconds]
+PULSE_TIME_INIT = 1        # [seconds] Initial pulse time applied
+PULSE_TIME_FINAL = 1.02     #[seconds]
+PULSE_STEP = 0.001    # [seconds] Time step for x axis of final graph
+RK_STEP = 0.001       # [seconds] For Runge Kutta integrator
 PRECESS_TIME = 10      # [seconds]
 
 # Some initial parameters
-W_STEP = 0.01    #[rad s^-1]    Step value of w to make ramsey fringes
-W_VAL = 186   #[rad s^-1]    What w to start with
-W_MAX  = 190      #[rad s^-1]    What w to end with
+W_STEP = 0.000005    #[rad s^-1]    Step length of search around w0
+W_STEP_NUM = 100    #Number of steps to search around w0
 
 W0_VAL = 188  #[rad s^-1]    Static field strength
-WC_VAL = 0.5   #[rad s^-1]   Rotating field strength
-PHI_VAL_1 = 0  #[rad]        RF pulse inital phase for first pulse
+PHI_VAL_1 = 0  #[rad]          RF pulse inital phase for first pulse
 
 def main():
     from tqdm import tqdm
@@ -28,28 +30,38 @@ def main():
     t0 = 0
     n = 4
 
-    wRange = np.arange(W_VAL, W_MAX + W_STEP, W_STEP)
+    wRange = np.arange(W0_VAL - W_STEP*W_STEP_NUM, W0_VAL + W_STEP*W_STEP_NUM, W_STEP)
+    pulseRange = np.arange(PULSE_TIME_INIT, PULSE_TIME_FINAL + PULSE_STEP, PULSE_STEP)
     zProb = []
+    rkError = []
+    shift = []
 
     ket = np.zeros ( n )
 
-    for wTemp in tqdm(wRange):
-        ket[0] = 1       # neutron starts spin up (ket[0] = Re[a0])
-        ket = spinPulse(ket, TIME_STEP, PULSE_1_TIME, n, wTemp, W0_VAL, WC_VAL, PHI_VAL_1)
-        ket = larmor(ket, PRECESS_TIME, W0_VAL, n)
+    for pulse in tqdm(pulseRange):    # Loop through various precession times
+        wl = np.pi / pulse  # Calculate w_l for optimized ramsey resonance
 
-        #spinPulse 2 has to stay in phase with spinPulse 1 while the larmor precession occurs
-        phiVal2 = wTemp*(PULSE_1_TIME) + PHI_VAL_1 + wTemp*PRECESS_TIME
-        ket = spinPulse(ket, TIME_STEP, PULSE_2_TIME, n, wTemp, W0_VAL, WC_VAL, phiVal2)
-        zProb.append(ket[0]*ket[0] + ket[1]*ket[1])
-        ket[:] = 0    # Reset ket for next loop
+        for wTemp in wRange:    # Does one optimized ramsey fringe for given pulse time
+            ket[0] = 1       #neutron starts spin up (ket[0] = Re[a0])
+            ket = spinPulse(ket, RK_STEP, pulse, n, wTemp, W0_VAL, wl, PHI_VAL_1)
+            ket = larmor(ket, PRECESS_TIME, W0_VAL, n)
 
-    print("The resonant freq is\t", wRange[zProb.index( min(zProb) )], " rad/s" )
+            #spinPulse 2 has to stay in phase with spinPulse 1 while the larmor precession occurs
+            phiVal2 = wTemp*pulse + PHI_VAL_1 + wTemp*PRECESS_TIME
+            ket = spinPulse(ket, RK_STEP, pulse, n,wTemp, W0_VAL, wl, phiVal2)
+            zProb.append(ket[0]*ket[0] + ket[1]*ket[1])
+            ket[:] = 0    # Reset ket for next loop
+
+        #Bloch Siegert Shift
+        shift.append(W0_VAL - wRange[zProb.index( min(zProb) )])
+        zProb.clear()   #clear for next loop
+
 
     # Plot Stuff
-    plt.plot(wRange,zProb)
-    plt.xlabel('w [rad s^-1]')
-    plt.ylabel('P(z)')
+    plt.plot(pulseRange, shift)
+    plt.title('Bloch Siegert Shifts for optimized linear Ramsey fringes')
+    plt.xlabel('Pulse time [s]')
+    plt.ylabel('Bloch Siegert Shift [rad/s]')
     plt.show()
 
     return
@@ -80,20 +92,19 @@ def larmor(u0, dt, w0, n):
                         u0[3]*np.cos(x) + u0[2]*np.sin(x)  ])
     return ketFinal
 
-
 def spinor(t, n, u, w, w0, wc, phi):
 # Modified right hand side of eq A.1 - A.4 in May's nEDM thesis
 # using eq 3.28, 3.29 as a basis
-# u[0] = Re(a'), u[1] = Im(a'), u[2] = Re(b'), u(3) = Im(b')
+# u[0] = Re(a), u[1] = Im(a), u[2] = Re(b), u(3) = Im(b)
     import numpy as np
     if ( n != 4 ):
         return np.zeros(n)
 
     x = w*t + phi
-    value = np.array ( [ 1/2*(w0*u[1] + wc*np.cos(x)*u[3]) - wc/2*u[2]*np.sin(x), \
-                       1/2*(-w0*u[0] - wc*np.cos(x)*u[2])  - wc/2*u[3]*np.sin(x), \
-                       1/2*(-w0*u[3] + wc*np.cos(x)*u[1]) + wc/2*u[0]*np.sin(x), \
-                       1/2*(w0*u[2] - wc*np.cos(x)*u[0]) + wc/2*u[1]*np.sin(x) ])
+    value = np.array ( [ 1/2*(w0*u[1] + wc*np.cos(x)*u[3]), \
+                       1/2*(-w0*u[0] - wc*np.cos(x)*u[2]), \
+                       1/2*(-w0*u[3] + wc*np.cos(x)*u[1]), \
+                       1/2*(w0*u[2] - wc*np.cos(x)*u[0]) ])
 
     return value
 
