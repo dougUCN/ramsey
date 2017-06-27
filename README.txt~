@@ -8,9 +8,7 @@ circularFringe.py -- Generates ramsey fringes using a circular RF field
 linearFringe.py -- Generates ramsey fringes using a linear RF field
 larmorTest.py -- Visualizes larmor precession given a ket state
 blochSiegert.py -- Takes a linear optimized ramsey fringes and finds the Bloch
-                    Siegert shift as a function of pulse time
-phaseAngle.py -- Plots Bloch Siegert shift as a function of initial phase
-angle
+                    Siegert shift as a funciton of pulse time
 
 circularFringe and linearFringe run slowly, and blochSiegert takes eons.
 This is because I suck at coding, and to compensate I use a progress bar

@@ -1,79 +1,66 @@
 #!/usr/bin/env python
 #
-# Draws a graph of Bloch Siegert shift in optimized linear ramsey fringes
-# as a function of pulse time t.
-#
-# To determine the BS shift for a linear fringe, searches for the lowest
-# local minimun in the vicinity of w_0, the expected resonant frequency,
-# and computes
+# Does initial phase angle affect the linear resonance frequency?
 #
 # Douglas Wong 5/28/17
 
 # Time parameters
-PULSE_TIME_INIT = 1        # [seconds] Initial pulse time applied
-PULSE_TIME_FINAL = 1.01     #[seconds]
-PULSE_STEP = 0.0005    # [seconds] Time step for x axis of final graph
-RK_STEP = 0.0005       # [seconds] For Runge Kutta integrator
+PHASE_INIT = 0        # [seconds] Initial pulse time applied
+PHASE_FINAL = 3.14159     #[seconds]
+PHASE_STEP = 0.1    # [seconds] Time step for x axis of final graph
+RK_STEP = 0.001       # [seconds] For Runge Kutta integrator
 PRECESS_TIME = 100      # [seconds]
 
 # Some initial parameters
 W_STEP = 0.000005    #[rad s^-1]    Step length of search around w0
-W_STEP_NUM = 100    #Number of steps to search around w0
-
+W_STEP_NUM = 100    # Number of steps to search around w0
 W0_VAL = 188  #[rad s^-1]    Static field strength
-PHI_VAL_1 = 0.7853981633974483  #[rad]          RF pulse inital phase for first pulse
+PULSE_TIME = 1.005  #[seconds]  Time in which pi/2 pulse applied
 
 def main():
-    from tqdm import tqdm           # For progress bar, see read me
-    from decimal import Decimal     # For error handling
+    from tqdm import tqdm   # Magic progress bar
+    from decimal import Decimal
     import numpy as np
     import matplotlib.pyplot as plt
-
     t0 = 0
     n = 4
 
     wRange = np.arange(W0_VAL - W_STEP*W_STEP_NUM, W0_VAL + W_STEP*W_STEP_NUM, W_STEP)
-    pulseRange = np.arange(PULSE_TIME_INIT, PULSE_TIME_FINAL + PULSE_STEP, PULSE_STEP)
+    phaseRange = np.arange(PHASE_INIT, PHASE_FINAL + PHASE_STEP, PHASE_STEP)
     zProb = []
     rkError = []
     shift = []
 
     ket = np.zeros ( n )
 
-    # Error Handling
-    if (PULSE_STEP < RK_STEP):
-        print("Error: Pulse step size too small for RK integrator")
-        return
-    if ((Decimal(str(PULSE_TIME_FINAL)) - Decimal(str(PULSE_TIME_INIT))) \
-            % Decimal(str(RK_STEP)) != 0):
+    if (Decimal(str(PULSE_TIME)) % Decimal(str(RK_STEP)) != 0):
         print("Error: Pulse time resolution too small for RK integrator")
         return
 
-    # Compute Bloch Siegert
-    for pulse in tqdm(pulseRange):    # Loop through various precession times
-        wl = np.pi / pulse  # Calculate w_l for optimized ramsey resonance
+    wl = np.pi / PULSE_TIME  # Calculate w_l for optimized ramsey resonance
 
-        for wTemp in wRange:    # Does one optimized S fringe for given pulse time
+    for phase in tqdm(phaseRange):    # Loop through various initial phase angles
+        for wTemp in wRange:    # Does one optimized ramsey fringe for given initial phase
             ket[0] = 1       #neutron starts spin up (ket[0] = Re[a0])
-            ket = spinPulse(ket, RK_STEP, pulse, n, wTemp, W0_VAL, wl, PHI_VAL_1)
+            ket = spinPulse(ket, RK_STEP, PULSE_TIME, n, wTemp, W0_VAL, wl, phase)
             ket = larmor(ket, PRECESS_TIME, W0_VAL, n)
 
             #spinPulse 2 has to stay in phase with spinPulse 1 while the larmor precession occurs
-            phiVal2 = wTemp*pulse + PHI_VAL_1 + wTemp*PRECESS_TIME
-            ket = spinPulse(ket, RK_STEP, pulse, n,wTemp, W0_VAL, wl, phiVal2)
+            phiVal2 = wTemp*PULSE_TIME + phase + wTemp*PRECESS_TIME
+            ket = spinPulse(ket, RK_STEP, PULSE_TIME, n,wTemp, W0_VAL, wl, phiVal2)
             zProb.append(ket[0]*ket[0] + ket[1]*ket[1])
             ket[:] = 0    # Reset ket for next loop
 
-        #Bloch Siegert Shift
+        #Resonant frequency
         shift.append(W0_VAL - wRange[zProb.index( min(zProb) )])
         zProb.clear()   #clear for next loop
 
 
     # Plot Stuff
-    plt.plot(pulseRange, shift)
-    plt.title('Bloch Siegert Shifts for optimized linear Ramsey fringes')
-    plt.xlabel('Pulse time [s]')
-    plt.ylabel('Bloch Siegert Shift [rad/s]')
+    plt.plot(phaseRange, shift)
+    plt.title('Bloch Siergert shift for optimized linear Ramsey Fringes')
+    plt.xlabel('Initial phase angle [rad]')
+    plt.ylabel('Shift [rad/s]')
     plt.show()
 
     return
