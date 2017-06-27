@@ -22,7 +22,8 @@ WC_VAL = 0.5   #[rad s^-1]   Rotating field strength
 PHI_VAL_1 = 0  #[rad]        RF pulse inital phase for first pulse
 
 def main():
-    from tqdm import tqdm
+    from tqdm import tqdm       # For progress bar, see read me
+    from decimal import Decimal # For error handling
     import numpy as np
     import matplotlib.pyplot as plt
     t0 = 0
@@ -32,6 +33,11 @@ def main():
     zProb = []
 
     ket = np.zeros ( n )
+
+    if ( (Decimal(str(PULSE_1_TIME)) % Decimal(str(TIME_STEP)) != 0) \
+        or (Decimal(str(PULSE_2_TIME)) % Decimal(str(TIME_STEP)) != 0)):
+        print("Error: Pulse time resolution too small for RK integrator")
+        return
 
     for wTemp in tqdm(wRange):
         ket[0] = 1       # neutron starts spin up (ket[0] = Re[a0])

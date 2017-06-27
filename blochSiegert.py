@@ -11,22 +11,24 @@
 
 # Time parameters
 PULSE_TIME_INIT = 1        # [seconds] Initial pulse time applied
-PULSE_TIME_FINAL = 1.02     #[seconds]
-PULSE_STEP = 0.001    # [seconds] Time step for x axis of final graph
-RK_STEP = 0.001       # [seconds] For Runge Kutta integrator
-PRECESS_TIME = 10      # [seconds]
+PULSE_TIME_FINAL = 1.01     #[seconds]
+PULSE_STEP = 0.0005    # [seconds] Time step for x axis of final graph
+RK_STEP = 0.0005       # [seconds] For Runge Kutta integrator
+PRECESS_TIME = 100      # [seconds]
 
 # Some initial parameters
 W_STEP = 0.000005    #[rad s^-1]    Step length of search around w0
 W_STEP_NUM = 100    #Number of steps to search around w0
 
 W0_VAL = 188  #[rad s^-1]    Static field strength
-PHI_VAL_1 = 0  #[rad]          RF pulse inital phase for first pulse
+PHI_VAL_1 = 0.39269908169872414  #[rad]          RF pulse inital phase for first pulse
 
 def main():
-    from tqdm import tqdm
+    from tqdm import tqdm           # For progress bar, see read me
+    from decimal import Decimal     # For error handling
     import numpy as np
     import matplotlib.pyplot as plt
+
     t0 = 0
     n = 4
 
@@ -38,10 +40,20 @@ def main():
 
     ket = np.zeros ( n )
 
+    # Error Handling
+    if (PULSE_STEP < RK_STEP):
+        print("Error: Pulse step size too small for RK integrator")
+        return
+    if ((Decimal(str(PULSE_TIME_FINAL)) - Decimal(str(PULSE_TIME_INIT))) \
+            % Decimal(str(RK_STEP)) != 0):
+        print("Error: Pulse time resolution too small for RK integrator")
+        return
+
+    # Compute Bloch Siegert
     for pulse in tqdm(pulseRange):    # Loop through various precession times
         wl = np.pi / pulse  # Calculate w_l for optimized ramsey resonance
 
-        for wTemp in wRange:    # Does one optimized ramsey fringe for given pulse time
+        for wTemp in wRange:    # Does one optimized S fringe for given pulse time
             ket[0] = 1       #neutron starts spin up (ket[0] = Re[a0])
             ket = spinPulse(ket, RK_STEP, pulse, n, wTemp, W0_VAL, wl, PHI_VAL_1)
             ket = larmor(ket, PRECESS_TIME, W0_VAL, n)
