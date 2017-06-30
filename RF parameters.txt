@@ -1,0 +1,15 @@
+Parameters for test run of ramsey fringes at LANL
+
+B_0 = 1 uT
+B_l = 4 nT
+Precession = 180s
+
+Plot Bloch Siegert as function of initial phase
+
+gyromagnetic ratio of the neutron (y)
+1.832 471 72 x 10^8 rad s^-1 T^-1
+
+w0 = - 183.247
+wl = - 0.732989
+
+Approximate pulse time for ramsey resonance: 4.286 seconds

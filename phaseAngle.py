@@ -1,21 +1,25 @@
 #!/usr/bin/env python
 #
-# Does initial phase angle affect the linear resonance frequency?
+# Plots bloch siegert shift as a function of initial phase angle
+#
+# Either PULSE_TIME or WL_VAL must be left NA for calculation of the
+# optimized RF fringe
 #
 # Douglas Wong 5/28/17
 
 # Time parameters
 PHASE_INIT = 0        # [seconds] Initial pulse time applied
 PHASE_FINAL = 3.14159     #[seconds]
-PHASE_STEP = 0.1    # [seconds] Time step for x axis of final graph
+PHASE_STEP = 0.05    # [seconds] Time step for x axis of final graph
 RK_STEP = 0.001       # [seconds] For Runge Kutta integrator
-PRECESS_TIME = 100      # [seconds]
+PRECESS_TIME = 180      # [seconds]
 
 # Some initial parameters
-W_STEP = 0.000005    #[rad s^-1]    Step length of search around w0
+W_STEP = 0.0000005    #[rad s^-1]    Step length of search around w0
 W_STEP_NUM = 100    # Number of steps to search around w0
-W0_VAL = 188  #[rad s^-1]    Static field strength
-PULSE_TIME = 1.003  #[seconds]  Time in which pi/2 pulse applied
+W0_VAL = 183.247  #[rad s^-1]    Static field strength
+WL_VAL = None  #[rad s^-1]    RF field strength
+PULSE_TIME = 4.286  #[seconds]  Time in which pi/2 pulse applied
 
 def main():
     from tqdm import tqdm   # Magic progress bar
@@ -33,21 +37,31 @@ def main():
 
     ket = np.zeros ( n )
 
-    if (Decimal(str(PULSE_TIME)) % Decimal(str(RK_STEP)) != 0):
-        print("Error: Pulse time resolution too small for RK integrator")
-        return
+    # Optimized ramsey resonance calculation
+    if WL_VAL is None:
+        wl = np.pi / PULSE_TIME  # Calculate w_l for optimized ramsey resonance
+        pulseTime = PULSE_TIME
+    elif PULSE_TIME is None:
+        pulseTime = np.pi / WL_VAL
+        wl = WL_VAL
+    else:
+        print("Warning: not calculating optimized ramsey fringes")
 
-    wl = np.pi / PULSE_TIME  # Calculate w_l for optimized ramsey resonance
+    # Error checking
+    if (Decimal(str(pulseTime)) % Decimal(str(RK_STEP)) != 0):
+        print("Error: RK step too large for pulse time")
+        print("Pulse time: ", pulseTime)
+        return
 
     for phase in tqdm(phaseRange):    # Loop through various initial phase angles
         for wTemp in wRange:    # Does one optimized ramsey fringe for given initial phase
             ket[0] = 1       #neutron starts spin up (ket[0] = Re[a0])
-            ket = spinPulse(ket, RK_STEP, PULSE_TIME, n, wTemp, W0_VAL, wl, phase)
+            ket = spinPulse(ket, RK_STEP, pulseTime, n, wTemp, W0_VAL, wl, phase)
             ket = larmor(ket, PRECESS_TIME, W0_VAL, n)
 
             #spinPulse 2 has to stay in phase with spinPulse 1 while the larmor precession occurs
-            phiVal2 = wTemp*PULSE_TIME + phase + wTemp*PRECESS_TIME
-            ket = spinPulse(ket, RK_STEP, PULSE_TIME, n,wTemp, W0_VAL, wl, phiVal2)
+            phiVal2 = wTemp*pulseTime + phase + wTemp*PRECESS_TIME
+            ket = spinPulse(ket, RK_STEP, pulseTime, n,wTemp, W0_VAL, wl, phiVal2)
             zProb.append(ket[0]*ket[0] + ket[1]*ket[1])
             ket[:] = 0    # Reset ket for next loop
 

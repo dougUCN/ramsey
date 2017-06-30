@@ -9,7 +9,7 @@
 # Time parameters
 PULSE_1_TIME = 3        # [seconds]
 PULSE_2_TIME = 3        # [seconds]
-TIME_STEP = 0.001       # [seconds]
+RK_STEP = 0.001       # [seconds]
 PRECESS_TIME = 10      # [seconds]
 
 # Some initial parameters
@@ -34,19 +34,19 @@ def main():
 
     ket = np.zeros ( n )
 
-    if ( (Decimal(str(PULSE_1_TIME)) % Decimal(str(TIME_STEP)) != 0) \
-        or (Decimal(str(PULSE_2_TIME)) % Decimal(str(TIME_STEP)) != 0)):
-        print("Error: Pulse time resolution too small for RK integrator")
+    if ( (Decimal(str(PULSE_1_TIME)) % Decimal(str(RK_STEP)) != 0) \
+        or (Decimal(str(PULSE_2_TIME)) % Decimal(str(RK_STEP)) != 0)):
+        print("Error: Pulse time step too small for RK integrator")
         return
 
     for wTemp in tqdm(wRange):
         ket[0] = 1       # neutron starts spin up (ket[0] = Re[a0])
-        ket = spinPulse(ket, TIME_STEP, PULSE_1_TIME, n, wTemp, W0_VAL, WC_VAL, PHI_VAL_1)
+        ket = spinPulse(ket, RK_STEP, PULSE_1_TIME, n, wTemp, W0_VAL, WC_VAL, PHI_VAL_1)
         ket = larmor(ket, PRECESS_TIME, W0_VAL, n)
 
         #spinPulse 2 has to stay in phase with spinPulse 1 while the larmor precession occurs
         phiVal2 = wTemp*(PULSE_1_TIME) + PHI_VAL_1 + wTemp*PRECESS_TIME
-        ket = spinPulse(ket, TIME_STEP, PULSE_2_TIME, n, wTemp, W0_VAL, WC_VAL, phiVal2)
+        ket = spinPulse(ket, RK_STEP, PULSE_2_TIME, n, wTemp, W0_VAL, WC_VAL, phiVal2)
         zProb.append(ket[0]*ket[0] + ket[1]*ket[1])
         ket[:] = 0    # Reset ket for next loop
 

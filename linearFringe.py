@@ -7,18 +7,18 @@
 # Douglas Wong 4/7/17
 
 # Time parameters
-PULSE_1_TIME = 3        # [seconds]
-PULSE_2_TIME = 3        # [seconds]
-TIME_STEP = 0.001       # [seconds]
-PRECESS_TIME = 10      # [seconds]
+PULSE_1_TIME = 4.286        # [seconds]
+PULSE_2_TIME = 4.286        # [seconds]
+RK_STEP = 0.001       # [seconds]
+PRECESS_TIME = 180      # [seconds]
 
 # Some initial parameters
-W_STEP = 0.01    #[rad s^-1]    Step value of w to make ramsey fringes
-W_VAL = 186   #[rad s^-1]    What w to start with
-W_MAX  = 190     #[rad s^-1]    What w to end with
+W_STEP = 0.0005    #[rad s^-1]    Step value of w to make ramsey fringes
+W_VAL = 183   #[rad s^-1]    What w to start with
+W_MAX  = 183.5     #[rad s^-1]    What w to end with
 
-W0_VAL = 188  #[rad s^-1]    Static field strength
-WL_VAL = 0.9549   #[rad s^-1]   Oscillating field strength
+W0_VAL = 183.247  #[rad s^-1]    Static field strength
+WL_VAL = 0.733   #[rad s^-1]   Oscillating field strength
 PHI_VAL_1 = 0  #[rad]          RF pulse inital phase for first pulse
 
 def main():
@@ -35,19 +35,19 @@ def main():
 
     ket = np.zeros ( n )
 
-    if ( (Decimal(str(PULSE_1_TIME)) % Decimal(str(TIME_STEP)) != 0) \
-        or (Decimal(str(PULSE_2_TIME)) % Decimal(str(TIME_STEP)) != 0)):
+    if ( (Decimal(str(PULSE_1_TIME)) % Decimal(str(RK_STEP)) != 0) \
+        or (Decimal(str(PULSE_2_TIME)) % Decimal(str(RK_STEP)) != 0)):
         print("Error: Pulse time resolution too small for RK integrator")
         return
 
     for wTemp in tqdm(wRange):
         ket[0] = 1       #neutron starts spin up (ket[0] = Re[a0])
-        ket = spinPulse(ket, TIME_STEP, PULSE_1_TIME, n, wTemp, W0_VAL, WL_VAL, PHI_VAL_1)
+        ket = spinPulse(ket, RK_STEP, PULSE_1_TIME, n, wTemp, W0_VAL, WL_VAL, PHI_VAL_1)
         ket = larmor(ket, PRECESS_TIME, W0_VAL, n)
 
         #spinPulse 2 has to stay in phase with spinPulse 1 while the larmor precession occurs
         phiVal2 = wTemp*PULSE_1_TIME +PHI_VAL_1 + wTemp*PRECESS_TIME
-        ket = spinPulse(ket, TIME_STEP, PULSE_2_TIME, n,wTemp, W0_VAL, WL_VAL, phiVal2)
+        ket = spinPulse(ket, RK_STEP, PULSE_2_TIME, n,wTemp, W0_VAL, WL_VAL, phiVal2)
         zProb.append(ket[0]*ket[0] + ket[1]*ket[1])
         ket[:] = 0    # Reset ket for next loop
 
