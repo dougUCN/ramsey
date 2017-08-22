@@ -1,16 +1,13 @@
 #!/usr/bin/env python
 #
-# Plots bloch siegert shift as a function of initial phase angle
-#
-# Either PULSE_TIME or WL_VAL must be left NA for calculation of the
-# optimized RF fringe
+# What happens when the pi/2 pulses are assymetric
 #
 # Douglas Wong 5/28/17
 
 # Time parameters
-PHASE_INIT = 0        # [rad] Initial phase angle
-PHASE_FINAL = 3.14159     #[rad]
-PHASE_STEP = 0.05    # [rad] Phase step for x axis of final graph
+PULSE_2_INIT = 3.886        # [rad] Initial phase angle
+PULSE_2_FINAL = 5.006     #[rad]
+PULSE_STEP = 0.05    # [rad] Time step for x axis of final graph
 RK_STEP = 0.001       # [seconds] For Runge Kutta integrator
 PRECESS_TIME = 180      # [seconds]
 
@@ -19,7 +16,8 @@ W_STEP = 0.0000005    #[rad s^-1]    Step length of search around w0
 W_STEP_NUM = 100    # Number of steps to search around w0
 W0_VAL = 183.247  #[rad s^-1]    Static field strength
 WL_VAL = None  #[rad s^-1]    RF field strength
-PULSE_TIME = 4.286  #[seconds]  Time in which pi/2 pulse applied
+PULSE_1 = 4.286  #[seconds]  Time in which pi/2 pulse applied
+PHASE_INIT = 0 #[rad]
 
 def main():
     from tqdm import tqdm   # Magic progress bar
@@ -30,7 +28,7 @@ def main():
     n = 4
 
     wRange = np.arange(W0_VAL - W_STEP*W_STEP_NUM, W0_VAL + W_STEP*W_STEP_NUM, W_STEP)
-    phaseRange = np.arange(PHASE_INIT, PHASE_FINAL + PHASE_STEP, PHASE_STEP)
+    pulseRange = np.arange(PULSE_2_INIT, PULSE_2_FINAL + PULSE_STEP, PULSE_STEP)
     zProb = []
     rkError = []
     shift = []
@@ -39,44 +37,43 @@ def main():
 
     # Optimized ramsey resonance calculation
     if WL_VAL is None:
-        wl = np.pi / PULSE_TIME  # Calculate w_l for optimized ramsey resonance
-        pulseTime = PULSE_TIME
-    elif PULSE_TIME is None:
-        pulseTime = np.pi / WL_VAL
+        wl = np.pi / PULSE_1  # Calculate w_l for optimized ramsey resonance
+        pulse1 = PULSE_1
+    elif PULSE_1 is None:
+        pulse1 = np.pi / WL_VAL
         wl = WL_VAL
     else:
         print("Warning: not calculating optimized ramsey fringes")
-        pulseTime = PULSE_TIME
+        pulse1 = PULSE_1
         wl = WL_VAL
 
     # Error checking
-    if (Decimal(str(pulseTime)) % Decimal(str(RK_STEP)) != 0):
+    if (Decimal(str(pulse1)) % Decimal(str(RK_STEP)) != 0):
         print("Error: RK step too large for pulse time")
-        print("Pulse time: ", pulseTime)
+        print("Pulse time: ", PULSE_1)
         return
 
-    for phase in tqdm(phaseRange):    # Loop through various initial phase angles
-        for wTemp in wRange:    # Does one optimized ramsey fringe for given initial phase
+    for pulse2 in tqdm(pulseRange):
+        for wTemp in wRange:    # Does one optimized ramsey fringe for given pulse time
             ket[0] = 1       #neutron starts spin up (ket[0] = Re[a0])
-            ket = spinPulse(ket, RK_STEP, pulseTime, n, wTemp, W0_VAL, wl, phase)
+            ket = spinPulse(ket, RK_STEP, PULSE_1, n, wTemp, W0_VAL, wl, PHASE_INIT)
             ket = larmor(ket, PRECESS_TIME, W0_VAL, n)
 
             #spinPulse 2 has to stay in phase with spinPulse 1 while the larmor precession occurs
-            phiVal2 = wTemp*pulseTime + phase + wTemp*PRECESS_TIME
-            ket = spinPulse(ket, RK_STEP, pulseTime, n,wTemp, W0_VAL, wl, phiVal2)
+            phiVal2 = wTemp*PULSE_1 + PHASE_INIT + wTemp*PRECESS_TIME
+            ket = spinPulse(ket, RK_STEP, pulse2, n,wTemp, W0_VAL, wl, phiVal2)
             zProb.append(ket[0]*ket[0] + ket[1]*ket[1])
             ket[:] = 0    # Reset ket for next loop
 
         #Resonant frequency
-        shift.append(W0_VAL - wRange[zProb.index( min(zProb) )])
+        shift.append(wRange[zProb.index( min(zProb) )])
         zProb.clear()   #clear for next loop
 
 
     # Plot Stuff
-    plt.plot(phaseRange, shift)
-    plt.title('Bloch Siergert shift for optimized linear Ramsey Fringes')
-    plt.xlabel('Initial phase angle [rad]')
-    plt.ylabel('Shift [rad/s]')
+    plt.plot(pulseRange - PULSE_1, shift)
+    plt.xlabel('Difference in pulse time [s]')
+    plt.ylabel('Res Freq [rad/s]')
     plt.show()
 
     return

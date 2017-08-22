@@ -13,9 +13,9 @@ RK_STEP = 0.001       # [seconds]
 PRECESS_TIME = 180      # [seconds]
 
 # Some initial parameters
-W_STEP = 0.0005    #[rad s^-1]    Step value of w to make ramsey fringes
-W_VAL = 183   #[rad s^-1]    What w to start with
-W_MAX  = 183.5     #[rad s^-1]    What w to end with
+W_STEP = 0.000005    #[rad s^-1]    Step value of w to make ramsey fringes
+W_VAL = 183.247 - 0.0005   #[rad s^-1]    What w to start with
+W_MAX  = 183.247 + 0.0005     #[rad s^-1]    What w to end with
 
 W0_VAL = 183.247  #[rad s^-1]    Static field strength
 WL_VAL = 0.733   #[rad s^-1]   Oscillating field strength
