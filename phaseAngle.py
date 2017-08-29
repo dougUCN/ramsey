@@ -74,6 +74,7 @@ def main():
 
     # Plot Stuff
     plt.plot(phaseRange, shift)
+    plt.grid(True)
     plt.title('Bloch Siergert shift for optimized linear Ramsey Fringes')
     plt.xlabel('Initial phase angle [rad]')
     plt.ylabel('Shift [rad/s]')

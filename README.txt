@@ -11,6 +11,7 @@ blochSiegert.py -- Takes a linear optimized ramsey fringes and finds the Bloch
                     Siegert shift as a function of pulse time
 phaseAngle.py -- Plots Bloch Siegert shift as a function of initial phase
 angle
+asymmetricPulse.py -- Illustrates shift in res. freq when pi/2 pulses are asymmetrical
 
 circularFringe and linearFringe run slowly, and blochSiegert takes eons.
 This is because I suck at coding, and to compensate I use a progress bar
@@ -18,6 +19,8 @@ https://github.com/tqdm/tqdm
 
 Runge Kutta integrator (rk4.py) taken from
 https://people.sc.fsu.edu/~jburkardt/cpp_src/rk4/rk4.html
+
+RF parameters.txt is a list of values utilized in the LANL nEDM experiment
 
 Many of my comments refer to Daniel May's 1999 Thesis on the ILL nEDM
 https://inis.iaea.org/search/searchsinglerecord.aspx?recordsFor=SingleRecord&RN=30045807

@@ -55,8 +55,9 @@ def main():
     print("The resonant freq is\t", wRange[zProb.index( min(zProb) )], "rad/s" )
 
     # Plot Stuff
-    plt.plot(wRange,zProb)
-    plt.xlabel('w [rad s^-1]')
+    plt.plot(wRange, np.divide(zProb, 2*np.pi))
+    plt.grid(True)
+    plt.xlabel('w [Hz]')
     plt.ylabel('P(z)')
     plt.show()
 

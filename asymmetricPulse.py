@@ -5,9 +5,9 @@
 # Douglas Wong 5/28/17
 
 # Time parameters
-PULSE_2_INIT = 3.886        # [rad] Initial phase angle
-PULSE_2_FINAL = 5.006     #[rad]
-PULSE_STEP = 0.05    # [rad] Time step for x axis of final graph
+PULSE_2_INIT = 4.286        # [seconds]
+PULSE_2_FINAL = 4.286     #[seconds]
+PULSE_STEP = 0.001    # [rad] Time step for x axis of final graph
 RK_STEP = 0.001       # [seconds] For Runge Kutta integrator
 PRECESS_TIME = 180      # [seconds]
 
@@ -66,14 +66,16 @@ def main():
             ket[:] = 0    # Reset ket for next loop
 
         #Resonant frequency
-        shift.append(wRange[zProb.index( min(zProb) )])
+        shift.append(W0_VAL - wRange[zProb.index( min(zProb) )])
         zProb.clear()   #clear for next loop
 
 
     # Plot Stuff
-    plt.plot(pulseRange - PULSE_1, shift)
+    np.savetxt('asymPulse.txt', np.c_[pulseRange - PULSE_1, np.divide(shift, 2*np.pi)])
+    plt.plot(pulseRange - PULSE_1, np.divide(shift, 2*np.pi))
+    plt.grid(True)
     plt.xlabel('Difference in pulse time [s]')
-    plt.ylabel('Res Freq [rad/s]')
+    plt.ylabel('Shift in res freq [Hz]')
     plt.show()
 
     return

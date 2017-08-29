@@ -21,7 +21,7 @@ W_STEP = 0.000005    #[rad s^-1]    Step length of search around w0
 W_STEP_NUM = 100    #Number of steps to search around w0
 
 W0_VAL = 188  #[rad s^-1]    Static field strength
-PHI_VAL_1 = 0.7853981633974483  #[rad]          RF pulse inital phase for first pulse
+PHI_VAL_1 = 0.7853981633974483  #[rad] RF pulse inital phase for first pulse
 
 def main():
     from tqdm import tqdm           # For progress bar, see read me
@@ -71,6 +71,7 @@ def main():
 
     # Plot Stuff
     plt.plot(pulseRange, shift)
+    plt.grid(True)
     plt.title('Bloch Siegert Shifts for optimized linear Ramsey fringes')
     plt.xlabel('Pulse time [s]')
     plt.ylabel('Bloch Siegert Shift [rad/s]')

@@ -54,6 +54,7 @@ def main():
 
     # Plot Stuff
     plt.plot(wRange,zProb)
+    plt.grid(True)
     plt.xlabel('w [rad s^-1]')
     plt.ylabel('P(z)')
     plt.show()
