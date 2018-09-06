@@ -10,15 +10,15 @@
 PULSE_1_TIME = 4.286        # [seconds]
 PULSE_2_TIME = 4.286        # [seconds]
 RK_STEP = 0.001       # [seconds]
-PRECESS_TIME = 180      # [seconds]
+PRECESS_TIME = 180      # 180 [seconds]
 
 # Some initial parameters
-W_STEP = 0.000005    #[rad s^-1]    Step value of w to make ramsey fringes
-W_VAL = 183.247 - 0.0005   #[rad s^-1]    What w to start with
-W_MAX  = 183.247 + 0.0005     #[rad s^-1]    What w to end with
+W_STEP = 0.0005    #[rad s^-1]    Step value of w to make ramsey fringes
+W_VAL = 183.2   #[rad s^-1]    What w to start with
+W_MAX  = 183.3    #[rad s^-1]    What w to end with
 
 W0_VAL = 183.247  #[rad s^-1]    Static field strength
-WL_VAL = 0.733   #[rad s^-1]   Oscillating field strength
+WL_VAL = 0.732989   #[rad s^-1]   Oscillating field strength
 PHI_VAL_1 = 0  #[rad]          RF pulse inital phase for first pulse
 
 def main():
@@ -55,7 +55,7 @@ def main():
     print("The resonant freq is\t", wRange[zProb.index( min(zProb) )], "rad/s" )
 
     # Plot Stuff
-    plt.plot(wRange, np.divide(zProb, 2*np.pi))
+    plt.plot(wRange, zProb)
     plt.grid(True)
     plt.xlabel('w [Hz]')
     plt.ylabel('P(z)')

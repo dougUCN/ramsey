@@ -52,7 +52,7 @@ def main():
     #  END FOR
 
     plotStuff(xProb, yProb, zProb, tRange)
-    
+
     return
 
 def spinor(t, n, u):
