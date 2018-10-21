@@ -13,6 +13,7 @@ blochSiegert.py -- Takes a linear optimized ramsey fringes and finds the Bloch
 phaseAngle.py -- Plots Bloch Siegert shift as a function of initial phase
 angle
 asymmetricPulse.py -- Illustrates shift in res. freq when pi/2 pulses are asymmetrical
+rkCircularAnimate.py -- Creates an animation of ramsey sequence (circular RF)
 
 circularFringe and linearFringe run slowly, and blochSiegert takes eons.
 This is because I'm an idiot and should have used C++ instead,

@@ -31,6 +31,7 @@ def main():
 
     # Initialize stuff
     n = 4     # number of equations in the vector
+    PI_CONST = 3.14159265359
     dt = TIME_STEP
     tRange = np.arange(0, MAX_TIME + dt, dt)
     u0 = np.zeros(n)

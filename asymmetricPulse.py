@@ -71,11 +71,11 @@ def main():
 
 
     # Plot Stuff
-    np.savetxt('asymPulse.txt', np.c_[pulseRange - PULSE_1, np.divide(shift, 2*np.pi)])
-    plt.plot(pulseRange - PULSE_1, np.divide(shift, 2*np.pi))
+    np.savetxt('asymPulse.txt', np.c_[pulseRange - PULSE_1, shift])
+    plt.plot(pulseRange - PULSE_1, shift)
     plt.grid(True)
     plt.xlabel('Difference in pulse time [s]')
-    plt.ylabel('Shift in res freq [Hz]')
+    plt.ylabel('Shift in res freq [rad/s]')
     plt.show()
 
     return

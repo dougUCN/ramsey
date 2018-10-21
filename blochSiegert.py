@@ -70,7 +70,7 @@ def main():
 
 
     # Plot Stuff
-    plt.plot(pulseRange, shift)
+    plt.plot(pulseRange, shift, 'o')
     plt.grid(True)
     plt.title('Bloch Siegert Shifts for optimized linear Ramsey fringes')
     plt.xlabel('Pulse time [s]')
