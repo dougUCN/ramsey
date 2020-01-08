@@ -56,7 +56,7 @@ def main():
         return
 
     for phase in tqdm(phaseRange):    # Loop through various initial phase angles
-        for wTemp in wRange:    # Does one optimized ramsey fringe for given initial phase
+        for wTemp in tqdm(wRange):    # Does one optimized ramsey fringe for given initial phase
             ket[0] = 1       #neutron starts spin up (ket[0] = Re[a0])
             ket = spinPulse(ket, RK_STEP, pulseTime, n, wTemp, W0_VAL, wl, phase)
             ket = larmor(ket, PRECESS_TIME, W0_VAL, n)

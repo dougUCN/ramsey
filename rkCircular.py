@@ -7,20 +7,20 @@
 #   Douglas Wong 2/20/17
 
 # Some initial parameters
-W_VAL = 20   #[rad s^-1]
-W0_VAL = 20  #[rad s^-1]    Static field strength
-WC_VAL = 1.57 #[rad s^-1]   Rotating field strength
+W_VAL = 403.144   #[rad s^-1]
+W0_VAL = 403.144  #[rad s^-1]    Static field strength
+WC_VAL = 0.7329886880 #[rad s^-1]   Rotating field strength
 PHI_VAL = 0 #[rad]          RF pulse inital phase
 
 # Initial "orientation" of neutron
 # Complex and real parts of the ket
-A_REAL_INIT = 1
+A_REAL_INIT = 0
 A_COMP_INIT = 0
-B_REAL_INIT = 0
+B_REAL_INIT = 1
 B_COMP_INIT = 0
 
 # Step taken by integrator and total period
-MAX_TIME = 2        # [seconds]
+MAX_TIME = 4.286        # [seconds]
 TIME_STEP = 0.001    # [seconds]
 
 
@@ -89,7 +89,7 @@ def plotStuff(xProb, yProb, zProb, time, xB, yB, angleDiff):
     plt.title('Odds of measuring spin up along z')
     plt.xlabel('time [s]')
     plt.ylabel('P(z)')
-    plt.axis([0,2*np.pi,0,1])
+    plt.axis([0,time[-1],0,1])
 
     fig2 = plt.figure(2)
     ax = fig2.add_subplot(111, projection='3d')
@@ -108,14 +108,14 @@ def plotStuff(xProb, yProb, zProb, time, xB, yB, angleDiff):
     plt.title('Odds of measuring spin up along x')
     plt.xlabel('time [s]')
     plt.ylabel('P(x)')
-    plt.axis([0,2*np.pi,0,1])
+    plt.axis([0,time[-1],0,1])
 
     plt.figure(4)
     plt.plot(time, yProb)
     plt.title('Odds of measuring spin up along y')
     plt.xlabel('time [s]')
     plt.ylabel('P(y)')
-    plt.axis([0,2*np.pi,0,1])
+    plt.axis([0,time[-1],0,1])
 
     plt.figure(5)
     plt.plot(time, xB)

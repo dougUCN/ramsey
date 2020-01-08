@@ -53,7 +53,7 @@ def main():
     for pulse in tqdm(pulseRange):    # Loop through various precession times
         wl = np.pi / pulse  # Calculate w_l for optimized ramsey resonance
 
-        for wTemp in wRange:    # Does one optimized S fringe for given pulse time
+        for wTemp in tqdm(wRange):    # Does one optimized S fringe for given pulse time
             ket[0] = 1       #neutron starts spin up (ket[0] = Re[a0])
             ket = spinPulse(ket, RK_STEP, pulse, n, wTemp, W0_VAL, wl, PHI_VAL_1)
             ket = larmor(ket, PRECESS_TIME, W0_VAL, n)
