@@ -7,20 +7,20 @@
 #   Douglas Wong 2/20/17
 
 # Some initial parameters
-W_VAL = 403.144   #[rad s^-1]
-W0_VAL = 403.144  #[rad s^-1]    Static field strength
-WC_VAL = 0.7329886880 #[rad s^-1]   Rotating field strength
-PHI_VAL = 0 #[rad]          RF pulse inital phase
+W_VAL = 23   #[rad s^-1]
+W0_VAL = 20  #[rad s^-1]    Static field strength
+WC_VAL = 1.57 #[rad s^-1]   Rotating field strength
+PHI_VAL = 21 #[rad]          RF pulse inital phase
 
 # Initial "orientation" of neutron
 # Complex and real parts of the ket
-A_REAL_INIT = 0
-A_COMP_INIT = 0
-B_REAL_INIT = 1
-B_COMP_INIT = 0
+A_REAL_INIT = -0.82573592
+A_COMP_INIT = 0.32626352
+B_REAL_INIT = -0.40023091
+B_COMP_INIT = -0.22699674
 
 # Step taken by integrator and total period
-MAX_TIME = 4.286        # [seconds]
+MAX_TIME = 1        # [seconds]
 TIME_STEP = 0.001    # [seconds]
 
 
@@ -74,67 +74,42 @@ def main():
         # take one RK step
         u0 = rk4vec ( t0, n, u0, dt, spinor)
     # END FOR
+    print(u0)
 
-    plotStuff(xProb, yProb, zProb, tRange, xB, yB, angleDiff)
+    plotStuff(xProb, yProb, zProb, tRange)
 
     return
 
-def plotStuff(xProb, yProb, zProb, time, xB, yB, angleDiff):
+def plotStuff(xProb, yProb, zProb, time):
     import numpy as np
     import matplotlib.pyplot as plt
     from mpl_toolkits.mplot3d import Axes3D
 
-    plt.figure(1)
-    plt.plot(time, zProb)
-    plt.title('Odds of measuring spin up along z')
-    plt.xlabel('time [s]')
-    plt.ylabel('P(z)')
-    plt.axis([0,time[-1],0,1])
-
     fig2 = plt.figure(2)
     ax = fig2.add_subplot(111, projection='3d')
-    plt.title('Odds of measuring spin up along x, y, z')
-    ax.scatter(xProb, yProb, zProb)
+    ax.plot(xProb, yProb, zProb, color="#005F73")
     ax.set_xlim3d(0,1)
     ax.set_ylim3d(0,1)
     ax.set_zlim3d(0,1)
     ax.set_xlabel('P(x)')
     ax.set_ylabel('P(y)')
     ax.set_zlabel('P(z)')
-    ax.view_init(30,220) # So that the viewing angle looks ok
+    ax.view_init(12,220) # So that the viewing angle looks ok
 
-    plt.figure(3)
-    plt.plot(time, xProb)
-    plt.title('Odds of measuring spin up along x')
-    plt.xlabel('time [s]')
-    plt.ylabel('P(x)')
-    plt.axis([0,time[-1],0,1])
+    plt.figure(figsize=[4.8,6])
+    ax1 = plt.subplot(311)
+    ax1.plot(time, xProb, color="#AE2012")
+    ax1.set(xlim=[0, time[-1]], ylim=[0,1], ylabel='P(x)')
+    ax1.xaxis.set_tick_params(labelbottom=False)
 
-    plt.figure(4)
-    plt.plot(time, yProb)
-    plt.title('Odds of measuring spin up along y')
-    plt.xlabel('time [s]')
-    plt.ylabel('P(y)')
-    plt.axis([0,time[-1],0,1])
-
-    plt.figure(5)
-    plt.plot(time, xB)
-    plt.title('X component of circularly rotating magnetic field')
-    plt.ylabel('B_x [Wrong units]')
-    plt.xlabel('time [s]')
-
-    plt.figure(6)
-    plt.plot(time, yB)
-    plt.title('Y component of circularly rotating magnetic field')
-    plt.ylabel('B_y [Wrong units]')
-    plt.xlabel('time [s]')
-
-    plt.figure(7)
-    plt.plot(time, angleDiff)
-    plt.title('Angle difference between RF and neutron moment')
-    plt.ylabel('Degrees')
-    plt.xlabel('time [s]')
-    plt.ylim(0,180)
+    ax2 = plt.subplot(312, sharex=ax1, sharey=ax1)
+    ax2.plot(time, yProb, color="#EE9B00")
+    ax2.set(ylabel='P(y)')
+    ax2.xaxis.set_tick_params(labelbottom=False)
+    
+    ax3 = plt.subplot(313, sharex=ax1, sharey=ax1)
+    ax3.plot(time, zProb, color="#0A9396")
+    ax3.set(ylabel='P(z)', xlabel='time [s]')
 
     plt.show()
 
